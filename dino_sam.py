@@ -156,92 +156,36 @@ def segment_with_grounding_dino_sam(image_path, text_prompt, output_dir):
     # 마스크와 원본 이미지 출력 함수 호출
     plot_segmented_images(image_rgb, masks, boxes_filt, pred_phrases, num_labels, output_dir)
 
-def plot_segmented_images(image_rgb, masks, boxes_filt, pred_phrases, num_labels, output_dir):
-    """마스크가 적용된 이미지를 원본과 함께 subplot으로 표시 및 저장 (마스크 결합 기능 포함)"""
-
-    # 1. 라벨에서 정확도 제거 후 결합된 마스크 생성
-    label_to_masks = {}
-    label_to_scores = {}
-    for mask, label in zip(masks, pred_phrases):
-        print(f"label: {label}")
-        name, score = label.split('(')  # 정확도를 분리하여 추출
-        score = float(score[:-1])  # ')' 제거하고 float으로 변환
-        
-        # 같은 이름의 라벨에 해당하는 마스크를 결합
-        if name not in label_to_masks:
-            label_to_masks[name] = mask
-            label_to_scores[name] = [score]
-        else:
-            label_to_masks[name] = torch.logical_or(label_to_masks[name], mask)  # 마스크를 논리합으로 결합
-            label_to_scores[name].append(score)
-    label_to_avg_score = {label: sum(scores) / len(scores) for label, scores in label_to_scores.items()}
-    # print(f"label to mask : {label_to_masks}")
-    
-    # 2. 모든 마스크를 하나로 결합
-    all_mask = torch.zeros_like(masks[0], dtype=torch.bool)
-    for mask in masks:
-        all_mask = torch.logical_or(all_mask, mask)  # 모든 마스크를 논리합으로 결합
-
-    # 3. 원래 이미지 + 마스크 이미지 subplot 생성 (원래 이미지도 포함하므로 num_labels + 2)
-    num_labels = len(label_to_masks)
-    print(num_labels)
-    fig, axes = plt.subplots(2, num_labels + 2, figsize=(25, 15), gridspec_kw={'height_ratios': [10, 1]})
-    
-    # 첫 번째 subplot에 원래 이미지 표시
-    ax_image = axes[0, 0]
-    ax_image.imshow(image_rgb)
-    ax_image.set_title("Original Image", fontsize=14, color='black')
-    ax_image.axis('off')
-    
-    ax_label = axes[1, 0]  # 원래 이미지 아래에는 빈 라벨 영역
-    ax_label.axis('off')  # 빈 축 제거
-
-    # 4. 각 라벨별로 결합된 마스크에 대한 subplot 생성
-    for idx, (label, combined_mask) in enumerate(label_to_masks.items()):
-        ax_image = axes[0, idx + 1]  # 첫 번째 row에는 이미지
-        ax_label = axes[1, idx + 1]  # 두 번째 row에는 라벨
-
-        # 이미지에 결합된 마스크 적용
-        ax_image.imshow(image_rgb)
-        show_mask(combined_mask.cpu().numpy(), ax_image, random_color=True)
-        ax_image.axis('off')  # 축 제거
-        
-        # Title을 subplot 상단에 표시 (이미지의 title)
-        ax_image.set_title(f"{label} Combined", fontsize=14, color='black')
-
-        # 라벨을 subplot 하단에 표시
-        score = round(label_to_avg_score[label], 2)
-        ax_label.text(0.5, 0.5, f"{label}({score})", fontsize=20, color='blue', ha='center', va='center')
-        ax_label.axis('off')  # 축 제거
-
-    # 5. 마지막 subplot에 모든 마스크 결합하여 시각화
-    ax_image = axes[0, num_labels + 1]
-    ax_image.imshow(image_rgb)
-    show_mask(all_mask.cpu().numpy(), ax_image, random_color=True)
-    ax_image.set_title("All Masks Combined", fontsize=14, color='black')
-    ax_image.axis('off')  # 축 제거
-
-    ax_label = axes[1, num_labels + 1]  # 결합된 마스크 아래에도 라벨 추가
-    ax_label.text(0.5, 0.5, 'All Combined Masks', fontsize=20, color='blue', ha='center', va='center')
-    ax_label.axis('off')  # 축 제거
-
-    # 6. 전체 figure의 제목 추가
-    plt.suptitle("Segmented Image with Combined Masks", fontsize=30, color='black', weight='bold')
-
-    plt.tight_layout(rect=[0, 0, 1, 0.96])  # 전체 제목을 위해 여백 조정
-    
-    # 저장 경로 지정
-    output_image_path = os.path.join(output_dir, "combined_masks/starry_night.jpg")
-    plt.savefig(output_image_path, bbox_inches="tight", dpi=300, pad_inches=0.0)
-    plt.close()
-
-    print(f"Segmented image saved at: {output_image_path}")
-
 # def plot_segmented_images(image_rgb, masks, boxes_filt, pred_phrases, num_labels, output_dir):
-#     """마스크가 적용된 이미지를 원본과 함께 subplot으로 표시 및 저장"""
+#     """마스크가 적용된 이미지를 원본과 함께 subplot으로 표시 및 저장 (마스크 결합 기능 포함)"""
+
+#     # 1. 라벨에서 정확도 제거 후 결합된 마스크 생성
+#     label_to_masks = {}
+#     label_to_scores = {}
+#     for mask, label in zip(masks, pred_phrases):
+#         print(f"label: {label}")
+#         name, score = label.split('(')  # 정확도를 분리하여 추출
+#         score = float(score[:-1])  # ')' 제거하고 float으로 변환
+        
+#         # 같은 이름의 라벨에 해당하는 마스크를 결합
+#         if name not in label_to_masks:
+#             label_to_masks[name] = mask
+#             label_to_scores[name] = [score]
+#         else:
+#             label_to_masks[name] = torch.logical_or(label_to_masks[name], mask)  # 마스크를 논리합으로 결합
+#             label_to_scores[name].append(score)
+#     label_to_avg_score = {label: sum(scores) / len(scores) for label, scores in label_to_scores.items()}
+#     # print(f"label to mask : {label_to_masks}")
     
-#     # 원래 이미지 + 마스크 이미지 subplot 생성 (원래 이미지도 포함하므로 num_labels + 1)
-#     fig, axes = plt.subplots(2, num_labels + 1, figsize=(25, 15), gridspec_kw={'height_ratios': [10, 1]})
+#     # 2. 모든 마스크를 하나로 결합
+#     all_mask = torch.zeros_like(masks[0], dtype=torch.bool)
+#     for mask in masks:
+#         all_mask = torch.logical_or(all_mask, mask)  # 모든 마스크를 논리합으로 결합
+
+#     # 3. 원래 이미지 + 마스크 이미지 subplot 생성 (원래 이미지도 포함하므로 num_labels + 2)
+#     num_labels = len(label_to_masks)
+#     print(num_labels)
+#     fig, axes = plt.subplots(2, num_labels + 2, figsize=(25, 15), gridspec_kw={'height_ratios': [10, 1]})
     
 #     # 첫 번째 subplot에 원래 이미지 표시
 #     ax_image = axes[0, 0]
@@ -252,35 +196,91 @@ def plot_segmented_images(image_rgb, masks, boxes_filt, pred_phrases, num_labels
 #     ax_label = axes[1, 0]  # 원래 이미지 아래에는 빈 라벨 영역
 #     ax_label.axis('off')  # 빈 축 제거
 
-#     # 각 마스크 이미지에 대한 subplot 생성
-#     for idx, (mask, box, label) in enumerate(zip(masks, boxes_filt, pred_phrases)):
+#     # 4. 각 라벨별로 결합된 마스크에 대한 subplot 생성
+#     for idx, (label, combined_mask) in enumerate(label_to_masks.items()):
 #         ax_image = axes[0, idx + 1]  # 첫 번째 row에는 이미지
 #         ax_label = axes[1, idx + 1]  # 두 번째 row에는 라벨
 
-#         # 이미지에 마스크 적용
+#         # 이미지에 결합된 마스크 적용
 #         ax_image.imshow(image_rgb)
-#         show_mask(mask.cpu().numpy(), ax_image, random_color=True)
-#         show_box(box.numpy(), ax_image, label)
+#         show_mask(combined_mask.cpu().numpy(), ax_image, random_color=True)
 #         ax_image.axis('off')  # 축 제거
         
 #         # Title을 subplot 상단에 표시 (이미지의 title)
-#         ax_image.set_title(f"Segment {idx + 1}", fontsize=14, color='black')
+#         ax_image.set_title(f"{label} Combined", fontsize=14, color='black')
 
 #         # 라벨을 subplot 하단에 표시
-#         ax_label.text(0.5, 0.5, label, fontsize=20, color='blue', ha='center', va='center')
+#         score = round(label_to_avg_score[label], 2)
+#         ax_label.text(0.5, 0.5, f"{label}({score})", fontsize=20, color='blue', ha='center', va='center')
 #         ax_label.axis('off')  # 축 제거
 
-#     # 전체 figure의 제목 추가
-#     plt.suptitle("Segmented Image and Original with Labels", fontsize=30, color='black', weight='bold')
+#     # 5. 마지막 subplot에 모든 마스크 결합하여 시각화
+#     ax_image = axes[0, num_labels + 1]
+#     ax_image.imshow(image_rgb)
+#     show_mask(all_mask.cpu().numpy(), ax_image, random_color=True)
+#     ax_image.set_title("All Masks Combined", fontsize=14, color='black')
+#     ax_image.axis('off')  # 축 제거
+
+#     ax_label = axes[1, num_labels + 1]  # 결합된 마스크 아래에도 라벨 추가
+#     ax_label.text(0.5, 0.5, 'All Combined Masks', fontsize=20, color='blue', ha='center', va='center')
+#     ax_label.axis('off')  # 축 제거
+
+#     # 6. 전체 figure의 제목 추가
+#     plt.suptitle("Segmented Image with Combined Masks", fontsize=30, color='black', weight='bold')
 
 #     plt.tight_layout(rect=[0, 0, 1, 0.96])  # 전체 제목을 위해 여백 조정
     
 #     # 저장 경로 지정
-#     output_image_path = os.path.join(output_dir, "las_meninas.jpg")
+#     output_image_path = os.path.join(output_dir, "combined_masks/guernica.jpg")
 #     plt.savefig(output_image_path, bbox_inches="tight", dpi=300, pad_inches=0.0)
 #     plt.close()
 
 #     print(f"Segmented image saved at: {output_image_path}")
+
+def plot_segmented_images(image_rgb, masks, boxes_filt, pred_phrases, num_labels, output_dir):
+    """마스크가 적용된 이미지를 원본과 함께 subplot으로 표시 및 저장"""
+    
+    # 원래 이미지 + 마스크 이미지 subplot 생성 (원래 이미지도 포함하므로 num_labels + 1)
+    fig, axes = plt.subplots(2, num_labels + 1, figsize=(25, 15), gridspec_kw={'height_ratios': [10, 1]})
+    
+    # 첫 번째 subplot에 원래 이미지 표시
+    ax_image = axes[0, 0]
+    ax_image.imshow(image_rgb)
+    ax_image.set_title("Original Image", fontsize=14, color='black')
+    ax_image.axis('off')
+    
+    ax_label = axes[1, 0]  # 원래 이미지 아래에는 빈 라벨 영역
+    ax_label.axis('off')  # 빈 축 제거
+
+    # 각 마스크 이미지에 대한 subplot 생성
+    for idx, (mask, box, label) in enumerate(zip(masks, boxes_filt, pred_phrases)):
+        ax_image = axes[0, idx + 1]  # 첫 번째 row에는 이미지
+        ax_label = axes[1, idx + 1]  # 두 번째 row에는 라벨
+
+        # 이미지에 마스크 적용
+        ax_image.imshow(image_rgb)
+        show_mask(mask.cpu().numpy(), ax_image, random_color=True)
+        show_box(box.numpy(), ax_image, label)
+        ax_image.axis('off')  # 축 제거
+        
+        # Title을 subplot 상단에 표시 (이미지의 title)
+        ax_image.set_title(f"Segment {idx + 1}", fontsize=14, color='black')
+
+        # 라벨을 subplot 하단에 표시
+        ax_label.text(0.5, 0.5, label, fontsize=20, color='blue', ha='center', va='center')
+        ax_label.axis('off')  # 축 제거
+
+    # 전체 figure의 제목 추가
+    plt.suptitle("Segmented Image and Original with Labels", fontsize=30, color='black', weight='bold')
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])  # 전체 제목을 위해 여백 조정
+    
+    # 저장 경로 지정
+    output_image_path = os.path.join(output_dir, "guernica.jpg")
+    plt.savefig(output_image_path, bbox_inches="tight", dpi=300, pad_inches=0.0)
+    plt.close()
+
+    print(f"Segmented image saved at: {output_image_path}")
 
 # 함수 호출 예시
 if __name__ == "__main__":
@@ -289,8 +289,8 @@ if __name__ == "__main__":
     # image_path = 'data/images/sunflower.jpg'
     # image_path = 'data/images/las_meninas.jpg'
     # image_path = 'data/images/swing.jpg'
-    image_path = 'data/images/starry_night.jpg'
-    
+    # image_path = 'data/images/starry_night.jpg'
+    image_path = 'data/images/guernica.jpg'
     
     # text = "This is a yellow flower"
     # text = "'Girl with a Pearl Earring' by Johannes Vermeer is a captivating portrait of a young girl, known for her enigmatic gaze and the striking simplicity of her pearl earring."
@@ -306,8 +306,9 @@ if __name__ == "__main__":
     
     # text = "Vincent van Gogh's Sunflowers bursts with vibrant yellows and swirling textures, evoking the fleeting vitality of nature with a raw intensity that celebrates both beauty and impermanence."
     # text = "Van Gogh used thick layers of paint to create a textured, three-dimensional effect, simplifying the background and vase with yellow hues to make the sunflowers stand out even more vividly."
-    text = "Van Gogh’s The Starry Night mesmerizes with its swirling skies and vivid contrasts of light and dark, creating an ethereal vision where nature’s chaos and serenity intertwine."
+    # text = "Van Gogh’s The Starry Night mesmerizes with its swirling skies and vivid contrasts of light and dark, creating an ethereal vision where nature’s chaos and serenity intertwine."
     # text = "Van Gogh's night sky is a field of swirling energy, while the village below remains quiet and orderly, connected to the fiery cypress tree, traditionally linked to mourning and graves."
+    text = "In Guernica, Picasso’s jagged lines and distorted figures convey a raw, visceral energy, turning the chaos of war into a powerful, emotional outcry."
     
     output_dir = "data/sam_outputs"
     
