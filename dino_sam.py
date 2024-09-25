@@ -231,7 +231,7 @@ def plot_segmented_images(image_rgb, masks, boxes_filt, pred_phrases, num_labels
     plt.tight_layout(rect=[0, 0, 1, 0.96])  # 전체 제목을 위해 여백 조정
     
     # 저장 경로 지정
-    output_image_path = os.path.join(output_dir, "combined_masks/sunflower4.jpg")
+    output_image_path = os.path.join(output_dir, "combined_masks/starry_night.jpg")
     plt.savefig(output_image_path, bbox_inches="tight", dpi=300, pad_inches=0.0)
     plt.close()
 
@@ -286,9 +286,10 @@ def plot_segmented_images(image_rgb, masks, boxes_filt, pred_phrases, num_labels
 if __name__ == "__main__":
     # image_path = 'data/images/yellow_flower.jpg'
     # image_path = 'data/images/girl_with_a_pearl_earring.jpg'
-    image_path = 'data/images/sunflower.jpg'
+    # image_path = 'data/images/sunflower.jpg'
     # image_path = 'data/images/las_meninas.jpg'
     # image_path = 'data/images/swing.jpg'
+    image_path = 'data/images/starry_night.jpg'
     
     
     # text = "This is a yellow flower"
@@ -304,7 +305,10 @@ if __name__ == "__main__":
     # text = "Jean-Honoré Fragonard's 'The Swing' enchants with its playful elegance, as the soft pastel colors and fluid movement capture the carefree joy and romantic whimsy of a fleeting moment."
     
     # text = "Vincent van Gogh's Sunflowers bursts with vibrant yellows and swirling textures, evoking the fleeting vitality of nature with a raw intensity that celebrates both beauty and impermanence."
-    text = "Van Gogh used thick layers of paint to create a textured, three-dimensional effect, simplifying the background and vase with yellow hues to make the sunflowers stand out even more vividly."
+    # text = "Van Gogh used thick layers of paint to create a textured, three-dimensional effect, simplifying the background and vase with yellow hues to make the sunflowers stand out even more vividly."
+    text = "Van Gogh’s The Starry Night mesmerizes with its swirling skies and vivid contrasts of light and dark, creating an ethereal vision where nature’s chaos and serenity intertwine."
+    # text = "Van Gogh's night sky is a field of swirling energy, while the village below remains quiet and orderly, connected to the fiery cypress tree, traditionally linked to mourning and graves."
+    
     output_dir = "data/sam_outputs"
     
     # 세그먼트된 이미지 가져오기
